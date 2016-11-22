@@ -1,0 +1,1 @@
+select lastName,firstName,title, editionNumber from authors ,titles, authorISBN where authors.authorid=authorISBN.authorid and titles.isbn=authorISBN.isbn;  
