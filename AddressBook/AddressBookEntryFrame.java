@@ -6,6 +6,7 @@
 
 // Java core packages
 import java.util.*;
+import java.util.List;
 import java.awt.*;
 
 // Java extension packages
@@ -73,13 +74,27 @@ public class AddressBookEntryFrame extends JInternalFrame {
       
       setField( FIRST_NAME, person.getFirstName() );
       setField( LAST_NAME, person.getLastName() );
-      setField( ADDRESS1, person.getAddress1() );
+/*      setField( ADDRESS1, person.getAddress1() );
       setField( ADDRESS2, person.getAddress2() );
       setField( CITY, person.getCity() );
       setField( STATE, person.getState() );
       setField( EIRCODE, person.getEircode() );
       setField( PHONE, person.getPhoneNumber() );
-      setField( EMAIL, person.getEmailAddress() );
+      setField( EMAIL, person.getEmailAddress() );*/
+      for( List<String> address : person.getAddresses()) {
+          setField( ADDRESS1, address.get(0) );
+          setField( ADDRESS2, address.get(1) );
+          setField( CITY, address.get(2) );
+          setField( STATE, address.get(3) );
+      }
+      for (String phoneNumber: person.getPhoneNumbers()) {
+    	  setField( PHONE, phoneNumber);
+      }
+      for (String email : person.getEmails()){
+    	  setField( EMAIL, email);
+      }
+      
+
    }
    
    // store AddressBookEntry data from GUI and return 
@@ -88,13 +103,22 @@ public class AddressBookEntryFrame extends JInternalFrame {
    {
       person.setFirstName( getField( FIRST_NAME ) );
       person.setLastName( getField( LAST_NAME ) );
-      person.setAddress1( getField( ADDRESS1 ) );
+/*      person.setAddress1( getField( ADDRESS1 ) );
       person.setAddress2( getField( ADDRESS2 ) );
       person.setCity( getField( CITY ) );
       person.setState( getField( STATE ) );
       person.setEircode( getField( EIRCODE ) );
       person.setPhoneNumber( getField( PHONE ) );
-      person.setEmailAddress( getField( EMAIL ) );
+      person.setEmailAddress( getField( EMAIL ) );*/
+      
+      List<String> address = new ArrayList<String>();
+      address.add(getField( ADDRESS1 ));
+      address.add(getField( ADDRESS2 ));
+      address.add(getField( CITY ));
+      address.add(getField( EIRCODE ));
+      person.addAddress(address);
+      person.addEmail(getField( EMAIL ));
+      person.addPhoneNumber(getField( PHONE));
       
       return person;
    }
