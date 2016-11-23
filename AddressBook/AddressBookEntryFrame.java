@@ -21,7 +21,7 @@ public class AddressBookEntryFrame extends JInternalFrame {
    private AddressBookEntry person;
    
    // panels to organize GUI
-   private JPanel leftPanel, rightPanel;
+   private JPanel leftPanel, middlePanel, rightPanel;
    
    // static integers used to determine new window positions  
    // for cascading windows
@@ -43,27 +43,33 @@ public class AddressBookEntryFrame extends JInternalFrame {
       fields = new HashMap();  
 
       leftPanel = new JPanel();
-      leftPanel.setLayout( new GridLayout( 9, 1, 0, 5 ) );
+      leftPanel.setLayout( new GridLayout( 12, 1, 0, 5 ) );
+      middlePanel = new JPanel();
+      middlePanel.setLayout( new GridLayout( 12, 1, 0, 5 ) );
       rightPanel = new JPanel();
-      rightPanel.setLayout( new GridLayout( 9, 1, 0, 5 ) );
+      rightPanel.setLayout( new GridLayout( 12, 1, 0, 5 ) );
       
       createRow( FIRST_NAME );
       createRow( LAST_NAME );
+      createButton("Addresses: ", "Add Address", "Remove Address");
       createRow( ADDRESS1 );
       createRow( ADDRESS2 );
       createRow( CITY );
       createRow( STATE );
       createRow( EIRCODE );
+      createButton("Phone Numbers: ", "Add Phone Number", "Remove Phone Number");
       createRow( PHONE );
+      createButton("E-Mails: ", "Add E-Mails", "Remove E-Mails");
       createRow( EMAIL );
       
       Container container = getContentPane();
       container.add( leftPanel, BorderLayout.WEST );
-      container.add( rightPanel, BorderLayout.CENTER );
+      container.add( middlePanel, BorderLayout.CENTER );
+      container.add(rightPanel, BorderLayout.EAST );
      
-      setBounds( xOffset, yOffset, 300, 300 );
-      xOffset = ( xOffset + 30 ) % 300;
-      yOffset = ( yOffset + 30 ) % 300;
+      setBounds( xOffset, yOffset, 700, 500 );
+      xOffset = ( xOffset + 30 ) % 700;
+      yOffset = ( yOffset + 30 ) % 500;
    }
 
    // set AddressBookEntry then use its properties to 
@@ -86,6 +92,7 @@ public class AddressBookEntryFrame extends JInternalFrame {
           setField( ADDRESS2, address.get(1) );
           setField( CITY, address.get(2) );
           setField( STATE, address.get(3) );
+          setField( EIRCODE, address.get(4) );
       }
       for (String phoneNumber: person.getPhoneNumbers()) {
     	  setField( PHONE, phoneNumber);
@@ -152,9 +159,29 @@ public class AddressBookEntryFrame extends JInternalFrame {
       leftPanel.add( label );
           
       JTextField field = new JTextField( 30 );
-      rightPanel.add( field );
+      middlePanel.add( field );
+      
+      JButton hiddenButton = new JButton();
+      hiddenButton.setVisible(false);
+      rightPanel.add(hiddenButton);
 
       fields.put( name, field );
+   }
+   
+   private void createButton( String sectionName, String buttonAddName , String buttonRemoveName)
+   {            
+      JLabel label = new JLabel( sectionName, SwingConstants.LEFT );
+      label.setBorder( 
+         BorderFactory.createEmptyBorder( 5, 5, 5, 5 ) );
+      leftPanel.add( label );
+          
+      JButton buttonAdd = new JButton(buttonAddName);
+      middlePanel.add( buttonAdd );
+      
+      JButton buttonRemove = new JButton(buttonRemoveName);
+      rightPanel.add( buttonRemove );
+
+     // fields.put( name, field );
    }
 }  // end class AddressBookEntryFrame
 

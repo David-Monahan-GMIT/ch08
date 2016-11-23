@@ -15,20 +15,72 @@ public class AddressBookEntry {
 	private String phoneNumber = "";
 	private String emailAddress = "";
 	private int personID;
-	private int addressID;
+/*	private int addressID;
 	private int phoneID;
-	private int emailID;
-
-	// Expanded data
+	private int emailID;*/
+	
+	// Expanded data fields
 	private List<List> addresses = new ArrayList<List>();
-	//private List<String> address = new ArrayList<String>();
 	private List<String> phoneNumbers = new ArrayList<String>();
 	private List<String> emails = new ArrayList<String>();
 	
+	private List<Integer> addressIDS = new ArrayList<Integer>();
+	private List<Integer> phoneIDS = new ArrayList<Integer>();
+	private List<Integer> emailIDS = new ArrayList<Integer>();
+	
+	public void addAddressID(int id) {
+		addressIDS.add(id);
+	}
+	public void removeAddressID(Integer id) {
+		addressIDS.remove(id);
+	}
+	
+	public void addPhoneID(int id) {
+		phoneIDS.add(id);
+	}
+	
+	public void removePhoneID(Integer id) {
+		phoneIDS.remove(id);
+	}
+	
+	public void addEmailID(int id) {
+		emailIDS.add(id);
+	}
+	
+	public void removeEmailID(Integer id) {
+		emailIDS.remove(id);
+	}
+	public List<Integer> getAddressIDS() {
+		return addressIDS;
+	}
+
+	public void setAddressIDS(List<Integer> addressIDS) {
+		this.addressIDS = addressIDS;
+	}
+
+	public List<Integer> getPhoneIDS() {
+		return phoneIDS;
+	}
+
+	public void setPhoneIDS(List<Integer> phoneIDS) {
+		this.phoneIDS = phoneIDS;
+	}
+
+	public List<Integer> getEmailIDS() {
+		return emailIDS;
+	}
+
+	public void setEmailIDS(List<Integer> emailIDS) {
+		this.emailIDS = emailIDS;
+	}
+
 	public void addAddress(List<String> address) {
 		addresses.add(address);
 	}
 	
+	public void removeAddress(List<String> address) {
+		this.addresses.remove(address);
+	}
 	public void addPhoneNumber(String phoneNumber) {
 		phoneNumbers.add(phoneNumber);
 	}
@@ -171,7 +223,7 @@ public class AddressBookEntry {
 		return personID;
 	}
 
-	// set person's addressID
+/*	// set person's addressID
 	public void setAddressID(int id) {
 		addressID = id;
 	}
@@ -199,7 +251,7 @@ public class AddressBookEntry {
 	// get person's emailID
 	public int getEmailID() {
 		return emailID;
-	}
+	}*/
 } // end class AddressBookEntry
 
 /**************************************************************************

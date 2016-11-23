@@ -36,17 +36,42 @@ public class CloudscapeDataAccess implements AddressBookDataAccess {
 	private PreparedStatement sqlDeletePhone;
 	private PreparedStatement sqlDeleteEmail;
 
+	// New prepared statements for addition functionality
+	private PreparedStatement sqlFindAddress;
+	private PreparedStatement sqlGetAddresses;
+	private PreparedStatement sqlRemoveAddress;
+	private PreparedStatement sqlFindPhoneNumber;
+	private PreparedStatement sqlGetPhoneNumbers;
+	private PreparedStatement sqlRemovePhoneNumber;
+	private PreparedStatement sqlFindEmail;
+	private PreparedStatement sqlGetEmails;
+	private PreparedStatement sqlRemoveEmail;
+
 	// set up PreparedStatements to access database
 	public CloudscapeDataAccess() throws Exception {
 		// connect to addressbook database
 		connect();
 
+		// locate tables
+		sqlFindAddress = connection.prepareStatement(
+				"SELECT address1, address2, city, " + "state, eircode FROM addresses WHERE addressID = ?");
+		sqlFindEmail = connection.prepareStatement("SELECT phoneNumber FROM phoneNumbers WHERE phoneID = ?");
+		sqlFindPhoneNumber = connection.prepareStatement("SELECT emailAddress FROM emailAddresses WHERE emailID = ?");
+		// get tables
+		sqlGetAddresses = connection.prepareStatement(
+				"SELECT addressID FROM addresses WHERE addresses.personID = ?");
+		sqlGetPhoneNumbers = connection.prepareStatement(
+				"SELECT phoneID FROM phoneNumbers WHERE phoneNumbers.personID = ?");
+		sqlGetEmails = connection.prepareStatement(
+				"SELECT emailID FROM emailAddresses WHERE emailAddresses.personID = ?");
+
 		// locate person
-		sqlFind = connection.prepareStatement("SELECT names.personID, firstName, lastName, "
+/*		sqlFind = connection.prepareStatement("SELECT names.personID, firstName, lastName, "
 				+ "addressID, address1, address2, city, state, " + "eircode, phoneID, phoneNumber, emailID, "
 				+ "emailAddress " + "FROM names, addresses, phoneNumbers, emailAddresses " + "WHERE lastName = ? AND "
 				+ "names.personID = addresses.personID AND " + "names.personID = phoneNumbers.personID AND "
-				+ "names.personID = emailAddresses.personID");
+				+ "names.personID = emailAddresses.personID");*/
+		sqlFind = connection.prepareStatement("SELECT names.personID FROM names WHERE lastName =?");
 
 		// TODO change to use mysql instead of cloudscape
 		// Obtain personID for last person inserted in database.
@@ -143,7 +168,10 @@ public class CloudscapeDataAccess implements AddressBookDataAccess {
 			int counter = 0;
 			// if no records found, return immediately
 			while (resultSet.next()) {
-				// return null;
+				people.add(new AddressBookEntry(resultSet.getInt(1)));
+				
+				
+/*				// return null;
 
 				// TODO needs a loop, Should return an ArrayList containing all
 				// the found people
@@ -154,19 +182,33 @@ public class CloudscapeDataAccess implements AddressBookDataAccess {
 				people.get(counter).setFirstName(resultSet.getString(2));
 				people.get(counter).setLastName(resultSet.getString(3));
 
-				people.get(counter).setAddressID(resultSet.getInt(4));
-				people.get(counter).setAddress1(resultSet.getString(5));
-				people.get(counter).setAddress2(resultSet.getString(6));
-				people.get(counter).setCity(resultSet.getString(7));
-				people.get(counter).setState(resultSet.getString(8));
-				people.get(counter).setEircode(resultSet.getString(9));
+				people.get(counter).addAddressID(resultSet.getInt(4));
 
-				people.get(counter).setPhoneID(resultSet.getInt(10));
-				people.get(counter).setPhoneNumber(resultSet.getString(11));
+				List<String> address = new ArrayList<String>();
+				address.add(resultSet.getString(5));
+				address.add(resultSet.getString(6));
+				address.add(resultSet.getString(7));
+				address.add(resultSet.getString(8));
+				address.add(resultSet.getString(9));
+				people.get(counter).addAddress(address);
 
-				people.get(counter).setEmailID(resultSet.getInt(12));
-				people.get(counter).setEmailAddress(resultSet.getString(13));
-				counter++;
+				
+				 * people.get(counter).setAddress1(resultSet.getString(5));
+				 * people.get(counter).setAddress2(resultSet.getString(6));
+				 * people.get(counter).setCity(resultSet.getString(7));
+				 * people.get(counter).setState(resultSet.getString(8));
+				 * people.get(counter).setEircode(resultSet.getString(9));
+				 
+
+				people.get(counter).addPhoneID(resultSet.getInt(10));
+
+				// people.get(counter).setPhoneNumber(resultSet.getString(11));
+				people.get(counter).addPhoneNumber(resultSet.getString(11));
+
+				people.get(counter).addEmailID(resultSet.getInt(12));
+				// people.get(counter).setEmailAddress(resultSet.getString(13));
+				people.get(counter).addEmail(resultSet.getString(13));
+				counter++;*/
 			}
 			// return AddressBookEntry
 			return people;
@@ -203,7 +245,7 @@ public class CloudscapeDataAccess implements AddressBookDataAccess {
 			sqlUpdateAddress.setString(3, person.getCity());
 			sqlUpdateAddress.setString(4, person.getState());
 			sqlUpdateAddress.setString(5, person.getEircode());
-			sqlUpdateAddress.setInt(6, person.getAddressID());
+			sqlUpdateAddress.setInt(6, person.getAddressIDS().get(0));
 			result = sqlUpdateAddress.executeUpdate();
 
 			// if update fails, rollback and discontinue
@@ -214,7 +256,7 @@ public class CloudscapeDataAccess implements AddressBookDataAccess {
 
 			// update phoneNumbers table
 			sqlUpdatePhone.setString(1, person.getPhoneNumber());
-			sqlUpdatePhone.setInt(2, person.getPhoneID());
+			sqlUpdatePhone.setInt(2, person.getPhoneIDS().get(0));
 			result = sqlUpdatePhone.executeUpdate();
 
 			// if update fails, rollback and discontinue
@@ -225,7 +267,7 @@ public class CloudscapeDataAccess implements AddressBookDataAccess {
 
 			// update emailAddresses table
 			sqlUpdateEmail.setString(1, person.getEmailAddress());
-			sqlUpdateEmail.setInt(2, person.getEmailID());
+			sqlUpdateEmail.setInt(2, person.getEmailIDS().get(0));
 			result = sqlUpdateEmail.executeUpdate();
 
 			// if update fails, rollback and discontinue
@@ -256,107 +298,99 @@ public class CloudscapeDataAccess implements AddressBookDataAccess {
 
 	// Insert new entry. Method returns boolean indicating
 	// success or failure.
-	public boolean newPerson( AddressBookEntry person )
-      throws DataAccessException
-   {
-      // insert person in database
-      try {
-         int result;
+	public boolean newPerson(AddressBookEntry person) throws DataAccessException {
+		// insert person in database
+		try {
+			int result;
 
-         // insert first and last name in names table
-         sqlInsertName.setString( 1, person.getFirstName() );
-         sqlInsertName.setString( 2, person.getLastName() );
-         result = sqlInsertName.executeUpdate();
+			// insert first and last name in names table
+			sqlInsertName.setString(1, person.getFirstName());
+			sqlInsertName.setString(2, person.getLastName());
+			result = sqlInsertName.executeUpdate();
 
-         // if insert fails, rollback and discontinue 
-         if ( result == 0 ) {
-            connection.rollback(); // rollback insert
-            return false;          // insert unsuccessful
-         }      
-         
-         // determine new personID
-         ResultSet resultPersonID = sqlPersonID.executeQuery();
-         
-         if ( resultPersonID.next() ) {
-            int personID =  resultPersonID.getInt( 1 );
-         
-            // insert address in addresses table
-/*            sqlInsertAddress.setInt( 1, personID );
-            sqlInsertAddress.setString( 2, 
-               person.getAddress1() );
-            sqlInsertAddress.setString( 3, 
-               person.getAddress2() );
-            sqlInsertAddress.setString( 4, 
-               person.getCity() );
-            sqlInsertAddress.setString( 5, 
-               person.getState() );
-            sqlInsertAddress.setString( 6, 
-               person.getEircode() );*/
-            
-            for (List<String> address : person.getAddresses()){
-            	sqlInsertAddress.setInt( 1, personID );
-                for(int i=0; i<4;i++) {
-                	sqlInsertAddress.setString( (i +2) , address.get(i));
-                }
-            }
- 
-          
-            result = sqlInsertAddress.executeUpdate();
-         
-            // if insert fails, rollback and discontinue 
-            if ( result == 0 ) {
-               connection.rollback(); // rollback insert
-               return false;          // insert unsuccessful
-            }      
+			// if insert fails, rollback and discontinue
+			if (result == 0) {
+				connection.rollback(); // rollback insert
+				return false; // insert unsuccessful
+			}
 
-            // insert phone number in phoneNumbers table
-            sqlInsertPhone.setInt( 1, personID );
-            sqlInsertPhone.setString( 2, 
-               person.getPhoneNumber() );
-            result = sqlInsertPhone.executeUpdate();
-         
-            // if insert fails, rollback and discontinue 
-            if ( result == 0 ) {
-               connection.rollback(); // rollback insert
-               return false;          // insert unsuccessful
-            }      
+			// determine new personID
+			ResultSet resultPersonID = sqlPersonID.executeQuery();
 
-            // insert email address in emailAddresses table
-            sqlInsertEmail.setInt( 1, personID );
-            sqlInsertEmail.setString( 2, 
-               person.getEmailAddress() );
-            result = sqlInsertEmail.executeUpdate();
+			if (resultPersonID.next()) {
+				int personID = resultPersonID.getInt(1);
 
-            // if insert fails, rollback and discontinue 
-            if ( result == 0 ) {
-               connection.rollback(); // rollback insert
-               return false;          // insert unsuccessful
-            }      
-       
-            connection.commit();   // commit insert
-            return true;           // insert successful
-         }
-         
-         else 
-            return false;
-      }  // end try
-      
-      // detect problems updating database
-      catch ( SQLException sqlException ) {
-         // rollback transaction
-         try {
-            connection.rollback(); // rollback update
-            return false;          // update unsuccessful
-         }
-         
-         // handle exception rolling back transaction
-         catch ( SQLException exception ) {
-            throw new DataAccessException( exception );
-         }
-      }
-   } // end
-																				// method
-																				// newPerson
+				// insert address in addresses table
+				/*
+				 * sqlInsertAddress.setInt( 1, personID );
+				 * sqlInsertAddress.setString( 2, person.getAddress1() );
+				 * sqlInsertAddress.setString( 3, person.getAddress2() );
+				 * sqlInsertAddress.setString( 4, person.getCity() );
+				 * sqlInsertAddress.setString( 5, person.getState() );
+				 * sqlInsertAddress.setString( 6, person.getEircode() );
+				 */
+
+				for (List<String> address : person.getAddresses()) {
+					sqlInsertAddress.setInt(1, personID);
+					for (int i = 0; i < 4; i++) {
+						sqlInsertAddress.setString((i + 2), address.get(i));
+					}
+				}
+
+				result = sqlInsertAddress.executeUpdate();
+
+				// if insert fails, rollback and discontinue
+				if (result == 0) {
+					connection.rollback(); // rollback insert
+					return false; // insert unsuccessful
+				}
+
+				// insert phone number in phoneNumbers table
+				sqlInsertPhone.setInt(1, personID);
+				sqlInsertPhone.setString(2, person.getPhoneNumber());
+				result = sqlInsertPhone.executeUpdate();
+
+				// if insert fails, rollback and discontinue
+				if (result == 0) {
+					connection.rollback(); // rollback insert
+					return false; // insert unsuccessful
+				}
+
+				// insert email address in emailAddresses table
+				sqlInsertEmail.setInt(1, personID);
+				sqlInsertEmail.setString(2, person.getEmailAddress());
+				result = sqlInsertEmail.executeUpdate();
+
+				// if insert fails, rollback and discontinue
+				if (result == 0) {
+					connection.rollback(); // rollback insert
+					return false; // insert unsuccessful
+				}
+
+				connection.commit(); // commit insert
+				return true; // insert successful
+			}
+
+			else
+				return false;
+		} // end try
+
+		// detect problems updating database
+		catch (SQLException sqlException) {
+			// rollback transaction
+			try {
+				connection.rollback(); // rollback update
+				return false; // update unsuccessful
+			}
+
+			// handle exception rolling back transaction
+			catch (SQLException exception) {
+				throw new DataAccessException(exception);
+			}
+		}
+	} // end
+		// method
+		// newPerson
 
 	// Delete an entry. Method returns boolean indicating
 	// success or failure.
