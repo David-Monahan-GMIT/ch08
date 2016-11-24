@@ -37,6 +37,7 @@ public class CloudscapeDataAccess implements AddressBookDataAccess {
 	private PreparedStatement sqlDeleteEmail;
 
 	// New prepared statements for addition functionality
+	private PreparedStatement sqlGetNames;
 	private PreparedStatement sqlFindAddress;
 	private PreparedStatement sqlGetAddresses;
 	private PreparedStatement sqlRemoveAddress;
@@ -55,22 +56,28 @@ public class CloudscapeDataAccess implements AddressBookDataAccess {
 		// locate tables
 		sqlFindAddress = connection.prepareStatement(
 				"SELECT address1, address2, city, " + "state, eircode FROM addresses WHERE addressID = ?");
-		sqlFindEmail = connection.prepareStatement("SELECT phoneNumber FROM phoneNumbers WHERE phoneID = ?");
-		sqlFindPhoneNumber = connection.prepareStatement("SELECT emailAddress FROM emailAddresses WHERE emailID = ?");
-		// get tables
-		sqlGetAddresses = connection.prepareStatement(
-				"SELECT addressID FROM addresses WHERE addresses.personID = ?");
-		sqlGetPhoneNumbers = connection.prepareStatement(
-				"SELECT phoneID FROM phoneNumbers WHERE phoneNumbers.personID = ?");
-		sqlGetEmails = connection.prepareStatement(
-				"SELECT emailID FROM emailAddresses WHERE emailAddresses.personID = ?");
+		sqlFindPhoneNumber = connection.prepareStatement("SELECT phoneNumber FROM phoneNumbers WHERE phoneID = ?");
+		sqlFindEmail = connection.prepareStatement("SELECT emailAddress FROM emailAddresses WHERE emailID = ?");
+		// get table ids
+		sqlGetNames = connection.prepareStatement("SELECT firstName, lastName FROM names WHERE names.personID = ?");
+		sqlGetAddresses = connection.prepareStatement("SELECT addressID FROM addresses WHERE addresses.personID = ?");
+		sqlGetPhoneNumbers = connection
+				.prepareStatement("SELECT phoneID FROM phoneNumbers WHERE phoneNumbers.personID = ?");
+		sqlGetEmails = connection
+				.prepareStatement("SELECT emailID FROM emailAddresses WHERE emailAddresses.personID = ?");
 
 		// locate person
-/*		sqlFind = connection.prepareStatement("SELECT names.personID, firstName, lastName, "
-				+ "addressID, address1, address2, city, state, " + "eircode, phoneID, phoneNumber, emailID, "
-				+ "emailAddress " + "FROM names, addresses, phoneNumbers, emailAddresses " + "WHERE lastName = ? AND "
-				+ "names.personID = addresses.personID AND " + "names.personID = phoneNumbers.personID AND "
-				+ "names.personID = emailAddresses.personID");*/
+		/*
+		 * sqlFind = connection.
+		 * prepareStatement("SELECT names.personID, firstName, lastName, " +
+		 * "addressID, address1, address2, city, state, " +
+		 * "eircode, phoneID, phoneNumber, emailID, " + "emailAddress " +
+		 * "FROM names, addresses, phoneNumbers, emailAddresses " +
+		 * "WHERE lastName = ? AND " +
+		 * "names.personID = addresses.personID AND " +
+		 * "names.personID = phoneNumbers.personID AND " +
+		 * "names.personID = emailAddresses.personID");
+		 */
 		sqlFind = connection.prepareStatement("SELECT names.personID FROM names WHERE lastName =?");
 
 		// TODO change to use mysql instead of cloudscape
@@ -169,46 +176,90 @@ public class CloudscapeDataAccess implements AddressBookDataAccess {
 			// if no records found, return immediately
 			while (resultSet.next()) {
 				people.add(new AddressBookEntry(resultSet.getInt(1)));
-				
-				
-/*				// return null;
 
-				// TODO needs a loop, Should return an ArrayList containing all
-				// the found people
-				// create new AddressBookEntry
-				people.add(new AddressBookEntry(resultSet.getInt(1)));
+				sqlGetNames.setInt(1, resultSet.getInt(1));
+				ResultSet names = sqlGetNames.executeQuery();
+				while (names.next()) {
+					people.get(counter).setFirstName(names.getString(1));
+					people.get(counter).setLastName(names.getString(2));
+				}
 
-				// set AddressBookEntry properties
-				people.get(counter).setFirstName(resultSet.getString(2));
-				people.get(counter).setLastName(resultSet.getString(3));
+				sqlGetAddresses.setInt(1, resultSet.getInt(1));
+				ResultSet addresses = sqlGetAddresses.executeQuery();
+				while (addresses.next()) {
+					sqlFindAddress.setInt(1, addresses.getInt(1));
+					ResultSet returnedAddresses = sqlFindAddress.executeQuery();
+					while (returnedAddresses.next()) {
+						List<String> address = new ArrayList<String>();
+						address.add(returnedAddresses.getString(1));
+						address.add(returnedAddresses.getString(2));
+						address.add(returnedAddresses.getString(3));
+						address.add(returnedAddresses.getString(4));
+						address.add(returnedAddresses.getString(5));
+						people.get(counter).addAddress(address);
+					}
+				}
+				sqlGetPhoneNumbers.setInt(1, resultSet.getInt(1));
+				ResultSet phoneNumbers = sqlGetPhoneNumbers.executeQuery();
+				while (phoneNumbers.next()) {
+					sqlFindPhoneNumber.setInt(1, phoneNumbers.getInt(1));
+					ResultSet returnedPhoneNumbers = sqlFindPhoneNumber.executeQuery();
+					while(returnedPhoneNumbers.next()) {
+						people.get(counter).addPhoneNumber(returnedPhoneNumbers.getString(1));
+					}					
+				}
 
-				people.get(counter).addAddressID(resultSet.getInt(4));
+				sqlGetEmails.setInt(1, resultSet.getInt(1));
+				ResultSet eMails = sqlGetEmails.executeQuery();
+				while (eMails.next()) {
+					sqlFindEmail.setInt(1, eMails.getInt(1));
+					ResultSet returnedEmails = sqlFindEmail.executeQuery();
+					while(returnedEmails.next()) {
+						people.get(counter).addEmail(returnedEmails.getString(1));
+					}
+				}
+				counter++;
 
-				List<String> address = new ArrayList<String>();
-				address.add(resultSet.getString(5));
-				address.add(resultSet.getString(6));
-				address.add(resultSet.getString(7));
-				address.add(resultSet.getString(8));
-				address.add(resultSet.getString(9));
-				people.get(counter).addAddress(address);
-
-				
+				/*
+				 * // return null;
+				 * 
+				 * // TODO needs a loop, Should return an ArrayList containing
+				 * all // the found people // create new AddressBookEntry
+				 * people.add(new AddressBookEntry(resultSet.getInt(1)));
+				 * 
+				 * // set AddressBookEntry properties
+				 * people.get(counter).setFirstName(resultSet.getString(2));
+				 * people.get(counter).setLastName(resultSet.getString(3));
+				 * 
+				 * people.get(counter).addAddressID(resultSet.getInt(4));
+				 * 
+				 * List<String> address = new ArrayList<String>();
+				 * address.add(resultSet.getString(5));
+				 * address.add(resultSet.getString(6));
+				 * address.add(resultSet.getString(7));
+				 * address.add(resultSet.getString(8));
+				 * address.add(resultSet.getString(9));
+				 * people.get(counter).addAddress(address);
+				 * 
+				 * 
 				 * people.get(counter).setAddress1(resultSet.getString(5));
 				 * people.get(counter).setAddress2(resultSet.getString(6));
 				 * people.get(counter).setCity(resultSet.getString(7));
 				 * people.get(counter).setState(resultSet.getString(8));
 				 * people.get(counter).setEircode(resultSet.getString(9));
-				 
-
-				people.get(counter).addPhoneID(resultSet.getInt(10));
-
-				// people.get(counter).setPhoneNumber(resultSet.getString(11));
-				people.get(counter).addPhoneNumber(resultSet.getString(11));
-
-				people.get(counter).addEmailID(resultSet.getInt(12));
-				// people.get(counter).setEmailAddress(resultSet.getString(13));
-				people.get(counter).addEmail(resultSet.getString(13));
-				counter++;*/
+				 * 
+				 * 
+				 * people.get(counter).addPhoneID(resultSet.getInt(10));
+				 * 
+				 * //
+				 * people.get(counter).setPhoneNumber(resultSet.getString(11));
+				 * people.get(counter).addPhoneNumber(resultSet.getString(11));
+				 * 
+				 * people.get(counter).addEmailID(resultSet.getInt(12)); //
+				 * people.get(counter).setEmailAddress(resultSet.getString(13));
+				 * people.get(counter).addEmail(resultSet.getString(13));
+				 * counter++;
+				 */
 			}
 			// return AddressBookEntry
 			return people;
