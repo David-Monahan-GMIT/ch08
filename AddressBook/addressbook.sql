@@ -23,7 +23,7 @@ create table addresses (
 	address1 varchar (50),
 	address2 varchar (50),
 	city varchar (30),
-	state varchar (2),
+	state varchar (10),
 	eircode varchar (7),
 	constraint fk_addresses foreign key (personID)
 		references names (personID),

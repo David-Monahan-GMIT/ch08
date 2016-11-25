@@ -1,3 +1,12 @@
+/**
+ * David Monahan 24/11/2016
+ * Client Server Programming Addressbook/sql assignment
+ * This is a modified version of the example addressbook code which can store multiple addresses, 
+ * phone numbers and emails for a given name entry. The search function can now return multiple 
+ * results for a given name, the gui has been given a new look and feel and the overall program 
+ * should be thread safe. * 
+ */
+
 // Fig. 8.38: AddressBook.java
 // An address book database example that allows information to 
 // be inserted, updated and deleted. The example uses 
@@ -8,12 +17,12 @@
 import java.awt.*;
 import javax.swing.UIManager.*;
 import java.awt.event.*;
-import java.sql.*;
 
 // Java extension packages
 import javax.swing.*;
 import javax.swing.event.*;
 
+@SuppressWarnings("serial")
 public class AddressBook extends JFrame {
 
 	// reference for manipulating multiple document interface
@@ -23,7 +32,8 @@ public class AddressBook extends JFrame {
 	private AddressBookDataAccess database;
 
 	// references to Actions
-	Action newAction, saveAction, deleteAction, searchAction, exitAction;
+	Action newAction, saveAction, deleteAction, searchAction, exitAction, newAddressAction, newPhoneNumberAction,
+			newEmailAction;
 
 	// set up database connection and GUI
 	public AddressBook() {
@@ -71,22 +81,38 @@ public class AddressBook extends JFrame {
 		deleteAction.setEnabled(false); // disabled by default
 		searchAction = new SearchAction();
 		exitAction = new ExitAction();
+		newAddressAction = new NewAddressAction();
+		newPhoneNumberAction = new NewPhoneNumberAction();
+		newEmailAction = new NewEmailAction();
+		newAddressAction.setEnabled(false);
+		newPhoneNumberAction.setEnabled(false);
+		newEmailAction.setEnabled(false);
 
 		// add actions to tool bar
 		toolBar.add(newAction);
 		toolBar.add(saveAction);
 		toolBar.add(deleteAction);
 		toolBar.add(new JToolBar.Separator());
+		toolBar.add(newAddressAction);
+		toolBar.add(newPhoneNumberAction);
+		toolBar.add(newEmailAction);
+		toolBar.add(new JToolBar.Separator());
 		toolBar.add(searchAction);
+
 
 		// add actions to File menu
 		fileMenu.add(newAction);
 		fileMenu.add(saveAction);
 		fileMenu.add(deleteAction);
 		fileMenu.addSeparator();
+		fileMenu.add(newAddressAction);
+		fileMenu.add(newPhoneNumberAction);
+		fileMenu.add(newEmailAction);
+		fileMenu.addSeparator();
 		fileMenu.add(searchAction);
 		fileMenu.addSeparator();
 		fileMenu.add(exitAction);
+
 
 		// set up menu bar
 		JMenuBar menuBar = new JMenuBar();
@@ -136,12 +162,18 @@ public class AddressBook extends JFrame {
 			public void internalFrameActivated(InternalFrameEvent event) {
 				saveAction.setEnabled(true);
 				deleteAction.setEnabled(true);
+				newAddressAction.setEnabled(true);
+				newPhoneNumberAction.setEnabled(true);
+				newEmailAction.setEnabled(true);
 			}
 
 			// internal frame becomes inactive frame on desktop
 			public void internalFrameDeactivated(InternalFrameEvent event) {
 				saveAction.setEnabled(false);
 				deleteAction.setEnabled(false);
+				newAddressAction.setEnabled(false);
+				newPhoneNumberAction.setEnabled(false);
+				newEmailAction.setEnabled(false);
 			}
 		} // end InternalFrameAdapter anonymous inner class
 		); // end call to addInternalFrameListener
@@ -353,6 +385,93 @@ public class AddressBook extends JFrame {
 		}
 
 	} // end inner class ExitAction
+
+	// inner class defines an action that can save new or
+	// updated entry
+	private class NewAddressAction extends AbstractAction {
+
+		// set up action's name, icon, descriptions and mnemonic
+		public NewAddressAction() {
+			putValue(NAME, "New Address");
+			putValue(SMALL_ICON, new ImageIcon(getClass().getResource("images/New24.png")));
+			putValue(SHORT_DESCRIPTION, "Add Address");
+			putValue(LONG_DESCRIPTION, "Add a new Address to this entry");
+			putValue(MNEMONIC_KEY, new Integer('A'));
+		}
+
+		// save new entry or update existing entry
+		public void actionPerformed(ActionEvent e) {
+			// get currently active window
+			AddressBookEntryFrame currentFrame = (AddressBookEntryFrame) desktop.getSelectedFrame();
+
+			// obtain AddressBookEntry from window
+			//AddressBookEntry person = currentFrame.getAddressBookEntry();
+			
+			currentFrame.setVisible(false);
+			currentFrame.addAddress();
+			currentFrame.setVisible(true);
+
+
+		} // end method actionPerformed
+	}
+	
+	// inner class defines an action that can save new or
+	// updated entry
+	private class NewPhoneNumberAction extends AbstractAction {
+
+		// set up action's name, icon, descriptions and mnemonic
+		public NewPhoneNumberAction() {
+			putValue(NAME, "New Phone Number");
+			putValue(SMALL_ICON, new ImageIcon(getClass().getResource("images/New24.png")));
+			putValue(SHORT_DESCRIPTION, "Add Phone Number");
+			putValue(LONG_DESCRIPTION, "Add a new Phone Number to this entry");
+			putValue(MNEMONIC_KEY, new Integer('A'));
+		}
+
+		// save new entry or update existing entry
+		public void actionPerformed(ActionEvent e) {
+			// get currently active window
+			AddressBookEntryFrame currentFrame = (AddressBookEntryFrame) desktop.getSelectedFrame();
+
+			// obtain AddressBookEntry from window
+			//AddressBookEntry person = currentFrame.getAddressBookEntry();
+			
+			currentFrame.setVisible(false);
+			currentFrame.addPhoneNumber();
+			currentFrame.setVisible(true);
+
+
+		} // end method actionPerformed
+	}
+	
+	// inner class defines an action that can save new or
+	// updated entry
+	private class NewEmailAction extends AbstractAction {
+
+		// set up action's name, icon, descriptions and mnemonic
+		public NewEmailAction() {
+			putValue(NAME, "New E-Mail");
+			putValue(SMALL_ICON, new ImageIcon(getClass().getResource("images/New24.png")));
+			putValue(SHORT_DESCRIPTION, "Add E-Mail");
+			putValue(LONG_DESCRIPTION, "Add a new E-Mail to this entry");
+			putValue(MNEMONIC_KEY, new Integer('A'));
+		}
+
+		// save new entry or update existing entry
+		public void actionPerformed(ActionEvent e) {
+			// get currently active window
+			AddressBookEntryFrame currentFrame = (AddressBookEntryFrame) desktop.getSelectedFrame();
+
+			// obtain AddressBookEntry from window
+			//AddressBookEntry person = currentFrame.getAddressBookEntry();
+			
+			currentFrame.setVisible(false);
+			currentFrame.addEmail();
+			currentFrame.setVisible(true);
+
+
+		} // end method actionPerformed
+	}
 }
 
 /**************************************************************************

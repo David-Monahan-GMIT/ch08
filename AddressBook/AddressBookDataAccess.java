@@ -1,10 +1,17 @@
+/**
+ * David Monahan 24/11/2016
+ * Client Server Programming Addressbook/sql assignment
+ * This is a modified version of the example addressbook code which can store multiple addresses, 
+ * phone numbers and emails for a given name entry. The search function can now return multiple 
+ * results for a given name, the gui has been given a new look and feel and the overall program 
+ * should be thread safe. * 
+ */
 // Fig. 8.34: AddressBookDataAccess.java
 // Interface that specifies the methods for inserting,
 // updating, deleting and finding records.
 
 
 // Java core packages
-import java.sql.*;
 import java.util.List;
 
 public interface AddressBookDataAccess {

@@ -1,3 +1,12 @@
+
+/**
+ * David Monahan 24/11/2016
+ * Client Server Programming Addressbook/sql assignment
+ * This is a modified version of the example addressbook code which can store multiple addresses, 
+ * phone numbers and emails for a given name entry. The search function can now return multiple 
+ * results for a given name, the gui has been given a new look and feel and the overall program 
+ * should be thread safe. * 
+ */
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,41 +24,43 @@ public class AddressBookEntry {
 	private String phoneNumber = "";
 	private String emailAddress = "";
 	private int personID;
-/*	private int addressID;
-	private int phoneID;
-	private int emailID;*/
-	
+	/*
+	 * private int addressID; private int phoneID; private int emailID;
+	 */
+
 	// Expanded data fields
-	private List<List> addresses = new ArrayList<List>();
+	private List<List<String>> addresses = new ArrayList<List<String>>();
 	private List<String> phoneNumbers = new ArrayList<String>();
 	private List<String> emails = new ArrayList<String>();
-	
+
 	private List<Integer> addressIDS = new ArrayList<Integer>();
 	private List<Integer> phoneIDS = new ArrayList<Integer>();
 	private List<Integer> emailIDS = new ArrayList<Integer>();
-	
+
 	public void addAddressID(int id) {
 		addressIDS.add(id);
 	}
+
 	public void removeAddressID(Integer id) {
 		addressIDS.remove(id);
 	}
-	
+
 	public void addPhoneID(int id) {
 		phoneIDS.add(id);
 	}
-	
+
 	public void removePhoneID(Integer id) {
 		phoneIDS.remove(id);
 	}
-	
+
 	public void addEmailID(int id) {
 		emailIDS.add(id);
 	}
-	
+
 	public void removeEmailID(Integer id) {
 		emailIDS.remove(id);
 	}
+
 	public List<Integer> getAddressIDS() {
 		return addressIDS;
 	}
@@ -77,23 +88,24 @@ public class AddressBookEntry {
 	public void addAddress(List<String> address) {
 		addresses.add(address);
 	}
-	
+
 	public void removeAddress(List<String> address) {
 		this.addresses.remove(address);
 	}
+
 	public void addPhoneNumber(String phoneNumber) {
 		phoneNumbers.add(phoneNumber);
 	}
-	
+
 	public void addEmail(String email) {
 		emails.add(email);
 	}
 
-	public List<List> getAddresses() {
+	public List<List<String>> getAddresses() {
 		return addresses;
 	}
 
-	public void setAddresses(List<List> addresses) {
+	public void setAddresses(List<List<String>> addresses) {
 		this.addresses = addresses;
 	}
 
@@ -116,8 +128,6 @@ public class AddressBookEntry {
 	public void setPersonID(int personID) {
 		this.personID = personID;
 	}
-
-
 
 	// empty constructor
 	public AddressBookEntry() {
@@ -223,35 +233,20 @@ public class AddressBookEntry {
 		return personID;
 	}
 
-/*	// set person's addressID
-	public void setAddressID(int id) {
-		addressID = id;
-	}
-
-	// get person's addressID
-	public int getAddressID() {
-		return addressID;
-	}
-
-	// set person's phoneID
-	public void setPhoneID(int id) {
-		phoneID = id;
-	}
-
-	// get person's phoneID
-	public int getPhoneID() {
-		return phoneID;
-	}
-
-	// set person's emailID
-	public void setEmailID(int id) {
-		emailID = id;
-	}
-
-	// get person's emailID
-	public int getEmailID() {
-		return emailID;
-	}*/
+	/*
+	 * // set person's addressID public void setAddressID(int id) { addressID =
+	 * id; }
+	 * 
+	 * // get person's addressID public int getAddressID() { return addressID; }
+	 * 
+	 * // set person's phoneID public void setPhoneID(int id) { phoneID = id; }
+	 * 
+	 * // get person's phoneID public int getPhoneID() { return phoneID; }
+	 * 
+	 * // set person's emailID public void setEmailID(int id) { emailID = id; }
+	 * 
+	 * // get person's emailID public int getEmailID() { return emailID; }
+	 */
 } // end class AddressBookEntry
 
 /**************************************************************************
